@@ -1,4 +1,5 @@
 import math, collections, re
+from nltk.corpus import stopwords
 
 class TimeSeriesAnalysis(object):
 	def _analyze_series(self, series):
@@ -36,6 +37,12 @@ class TimeSeriesAnalysis(object):
 		return score
 
 class SentimentAnalysis(object):
+	'''
+	This is a sentiment analysis. The input can be a single tweet or a list of tweets.
+	It returns a value between -5 and 5 indicating the sentiment of the tweets(s). 
+	If a list is given, the average score will be returned.
+	Here a lexicon-based method is used.
+	'''
 	def __init__(self, lexicon = 'AFINN-111.txt'):
 		self._read_sentiment_lexicon(lexicon)
 
@@ -65,6 +72,91 @@ class SentimentAnalysis(object):
 		score /= len(tokens)
 		return score
 
-	def analyze(self, tweet):
-		score = self._lexicon_based_analyze(tweet['text'])
+	def analyze(self, tweets):
+		if type(tweets) is list:
+			score = 0.0
+			for tweet in tweets:
+				score += self._lexicon_based_analyze(tweet['text'])
+			score /= len(tweets)
+		else:
+			score = self._lexicon_based_analyze(tweets['text'])
 		return score
+
+class WordAnalysis(object):
+	'''
+	This is an analysis for words in a list of tweets.
+	The output is a score between 0 and 1, indicating
+	the quality of the tweets.
+	Here repeating words, punctuations, uppercase words 
+	and average length are considered.
+	'''
+	def __init__(self):
+		self.stopwords = stopwords.words['english']
+		# limit of average appearance of a word in a sentence
+		self.max_avg_limit = 1.5
+		self.punctuation_limit = 5
+		self.uppercase_limit = 1
+		self.length_limit = 5
+
+	def _tokenize(self, text):
+		# remove all non-ascii
+		eng_text = re.sub('/[^a-zA-Z- ]+/g', '', text)
+		# remove continuous spaces
+		clean_text = re.sub('/ {2,}/', ' ', eng_text).lower()
+		return clean_text.split()
+
+	def count_words(self, tweet):
+		'''
+		It counts the number of every word in the tweet and
+		returns a Counter object which is a subclass of dict.
+		'''
+		tokens = self._tokenize(tweet['text'])
+		return collections.Counter(tokens)
+
+	def count_punctuaions(self, tweet):
+		#exception_list = '#@'
+		#count = reduce(lambda x, y: x + 1 if y not in exception_list and y in string.puncuation else x, tweet['text'], 0)
+		count = reduce(lambda x, y: x + 1 if y in '?!~$*' else x, tweet['text'], 0)
+		return count
+
+	def count_uppercase(self, tweet):
+		tokens = self._tokenize(tweet)
+		count = reduce(lambda x, y: x + 1 if y.isupper() else x, tokens, 0)
+		return count
+
+	def calculate_length(self, tweet):
+		return len(self._tokenize(tweet))
+
+	def calculate_statistics(self, tweets):
+		res = {
+			'words_count': collections.Counter(),
+			'punctuation': 0,
+			'uppercase': 0,
+			'length': 0,
+		}
+		for tweet in tweets:
+			res['words_count'].update(self.count_words(tweet))
+			res['punctuation'] += self.count_punctuaions(tweet)
+			res['uppercase'] += self.count_uppercase(tweet)
+			res['length'] += self.calculate_length(tweet)
+		# stop words are removed
+		res['words_count'] = {key: res['words_count'][key] for key in res['words_count'] if key not in self.stopwords}
+		res['punctuation'] /= float(len(tweets))
+		res['uppercase'] /= float(len(tweets))
+		res['length'] /= float(len(tweets))
+		return res
+
+	def analyze(self, tweets):
+		stats = self.calculate_statistics(tweets)
+		score = 0.0
+		count = float(len(tweets))
+		# if the top word appears almost in every tweet, then this might be meaningless.
+		max_word_avg = max(res['words_count'].iteritems(), key = lambda x: x[1])[1] / count
+		score += 0 if max_word_avg > self.max_avg_limit else 1 - max_word_avg / self.max_avg_limit
+		# punctuation
+		score += 0 if res['punctuation'] > self.punctuation_limit else 1 - stats['punctuation'] / self.punctuation_limit
+		# uppercase
+		score += 0 if res['uppercase'] > self.uppercase_limit else 1 - stats['uppercase'] / self.uppercase_limit
+		# avg length
+		score += 1 if res['length'] > 5 else stats['length'] / self.length_limit
+		return score /= len(stats)
