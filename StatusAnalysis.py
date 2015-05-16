@@ -39,7 +39,8 @@ class TimeSeriesAnalysis(object):
 class SentimentAnalysis(object):
 	'''
 	This is a sentiment analysis. The input can be a single tweet or a list of tweets.
-	It returns a value between -5 and 5 indicating the sentiment of the tweets(s). 
+	analyze_sentiment() returns a value between -5 and 5 indicating the sentiment of the tweets(s). 
+	analyze() returns a score value between 0 and 1 based on the sentiment.
 	If a list is given, the average score will be returned.
 	Here a lexicon-based method is used.
 	'''
@@ -72,7 +73,7 @@ class SentimentAnalysis(object):
 		score /= len(tokens)
 		return score
 
-	def analyze(self, tweets):
+	def analyze_sentiment(self, tweets):
 		if type(tweets) is list:
 			score = 0.0
 			for tweet in tweets:
@@ -80,6 +81,12 @@ class SentimentAnalysis(object):
 			score /= len(tweets)
 		else:
 			score = self._lexicon_based_analyze(tweets['text'])
+		return score
+
+	def analyze(self, tweets):
+		sentiment = self.analyze_sentiment(tweets)
+		score = float(sentiment + 1) / 2
+		score = 0 if score < 0 else (1 if score > 1 else score)
 		return score
 
 class WordAnalysis(object):
@@ -94,9 +101,9 @@ class WordAnalysis(object):
 		self.stopwords = stopwords.words['english']
 		# limit of average appearance of a word in a sentence
 		self.max_avg_limit = 1.5
-		self.punctuation_limit = 5
-		self.uppercase_limit = 1
-		self.length_limit = 5
+		self.punctuation_limit = 5.0
+		self.uppercase_limit = 1.0
+		self.length_limit = 5.0
 
 	def _tokenize(self, text):
 		# remove all non-ascii
@@ -151,12 +158,12 @@ class WordAnalysis(object):
 		score = 0.0
 		count = float(len(tweets))
 		# if the top word appears almost in every tweet, then this might be meaningless.
-		max_word_avg = max(res['words_count'].iteritems(), key = lambda x: x[1])[1] / count
+		max_word_avg = max(stats['words_count'].iteritems(), key = lambda x: x[1])[1] / count
 		score += 0 if max_word_avg > self.max_avg_limit else 1 - max_word_avg / self.max_avg_limit
 		# punctuation
-		score += 0 if res['punctuation'] > self.punctuation_limit else 1 - stats['punctuation'] / self.punctuation_limit
+		score += 0 if stats['punctuation'] > self.punctuation_limit else 1 - stats['punctuation'] / self.punctuation_limit
 		# uppercase
-		score += 0 if res['uppercase'] > self.uppercase_limit else 1 - stats['uppercase'] / self.uppercase_limit
+		score += 0 if stats['uppercase'] > self.uppercase_limit else 1 - stats['uppercase'] / self.uppercase_limit
 		# avg length
-		score += 1 if res['length'] > 5 else stats['length'] / self.length_limit
+		score += 1 if stats['length'] > 5 else stats['length'] / self.length_limit
 		return score /= len(stats)

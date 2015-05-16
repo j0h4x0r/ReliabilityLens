@@ -20,6 +20,7 @@ class TwitterAPI(object):
 		res = {}
 		res['id'] = user.id
 		res['screen_name'] = user.screen_name
+		res['created_at'] = user.created_at
 		res['followers_count'] = user.followers_count
 		res['friends_count'] = user.friends_count # followings count
 		res['favourites_count'] = user.favourites_count
