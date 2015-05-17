@@ -1,4 +1,4 @@
-import math, collections, re
+import math, collections, re, datetime
 from nltk.corpus import stopwords
 
 class TimeSeriesAnalysis(object):
@@ -49,7 +49,7 @@ class SentimentAnalysis(object):
 
 	def _read_sentiment_lexicon(self, lexicon):
 		with open(lexicon) as dictfile:
-			senti_dict = {line[0]: int(line[1]) for line in dictfile}
+			senti_dict = dict(map(lambda (k, v): (k, int(v)), [line.split('\t') for line in dictfile]))
 		self.sentiment_word_dict = {k: senti_dict[k] for k in senti_dict if ' ' not in k}
 		self.sentiment_phrase_dict = {k: senti_dict[k] for k in senti_dict if ' ' in k}
 
@@ -98,7 +98,9 @@ class WordAnalysis(object):
 	and average length are considered.
 	'''
 	def __init__(self):
-		self.stopwords = stopwords.words['english']
+		self.stopwords = []
+		for word in stopwords.words('english'):
+			self.stopwords.append(word.encode('utf8', 'ignore'))
 		# limit of average appearance of a word in a sentence
 		self.max_avg_limit = 1.5
 		self.punctuation_limit = 5.0
@@ -127,12 +129,12 @@ class WordAnalysis(object):
 		return count
 
 	def count_uppercase(self, tweet):
-		tokens = self._tokenize(tweet)
+		tokens = self._tokenize(tweet['text'])
 		count = reduce(lambda x, y: x + 1 if y.isupper() else x, tokens, 0)
 		return count
 
 	def calculate_length(self, tweet):
-		return len(self._tokenize(tweet))
+		return len(self._tokenize(tweet['text']))
 
 	def calculate_statistics(self, tweets):
 		res = {
@@ -166,4 +168,5 @@ class WordAnalysis(object):
 		score += 0 if stats['uppercase'] > self.uppercase_limit else 1 - stats['uppercase'] / self.uppercase_limit
 		# avg length
 		score += 1 if stats['length'] > 5 else stats['length'] / self.length_limit
-		return score /= len(stats)
+		score /= len(stats)
+		return score

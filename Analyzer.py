@@ -3,11 +3,11 @@ import json
 
 def analyze(username):
 	# collect data
-	api = TwitterAPI()
+	api = TwitterAPI.TwitterAPI()
 	print 'Getting user information...'
 	user = api.get_user(username)
 	print 'Getting frineds information...'
-	frineds = api.get_friends(username)
+	friends = api.get_friends(username)
 	print 'Getting tweets...'
 	tweets = api.get_statuses(username)
 	print 'All data collected!'

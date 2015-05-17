@@ -2,7 +2,7 @@ import tweepy
 
 class TwitterAPI(object):
 
-	def __init__():
+	def __init__(self):
 		self.consumer_key = 'drsdK24HynMJ4muIUJeRRDOGw'
 		self.consumer_secret = 'LzQe8b0n9kDGTvt8NHZReNsAiHvAyVtiePiO5vAH1qiegje4Ub'
 		self.access_token = '1064868938-2iS7qSA0LzgywVLbonbXeyblfbYRoyOCetSNQfO'
@@ -37,9 +37,9 @@ class TwitterAPI(object):
 		res['user'] = self.extract_user_info(tweet.user)
 		res['geo'] = True if tweet.coordinates else False
 		res['in_reply'] = True if tweet.in_reply_to_status_id else False
-		res['retweet'] = True if hasattr(tweet.retweeted_status) else False
+		res['retweet'] = True if hasattr(tweet, 'retweeted_status') else False
 		res['retweet_count'] = tweet.retweet_count
-		res['favourite_count'] = tweet.favourite_count
+		res['favourite_count'] = tweet.favourite_count if hasattr(tweet, 'favourite_count') else 0
 		# entities statistics
 		res['entities'] = {
 			'media': len(tweet.entities.get('media', [])),
@@ -53,28 +53,31 @@ class TwitterAPI(object):
 		uid = user_id if user_id else screen_name
 		try:
 			user = self.api.get_user(id = uid)
-		except tweepy.TweepError as e:
+		except tweepy.error.TweepError as e:
+			print e.message
 			return {}
 		return self.extract_user_info(user)
 
 	def get_friends(self, screen_name = "", user_id = None):
 		uid = user_id if user_id else screen_name
-		try:
-			friends = tweepy.Cursor(self.api.friends, id = uid, count = 200).items(self.friends_limit)
-		except tweepy.TweepError as e:
-			return []
+		friends = tweepy.Cursor(self.api.friends, id = uid, count = 200).items(self.friends_limit)
 		res = []
-		for friend in friends:
-			res.append(self.extract_user_info(friend))
+		try:
+			for friend in friends:
+				res.append(self.extract_user_info(friend))
+		except tweepy.error.TweepError as e:
+			print e.message
+			return []
 		return res
 
 	def get_statuses(self, screen_name = "", user_id = None):
 		uid = user_id if user_id else screen_name
-		try:
-			tweets = tweepy.Cursor(self.api.user_timeline, id = uid, count = 200).items(self.tweets_limit)
-		except tweepy.TweepError as e:
-			return []
+		tweets = tweepy.Cursor(self.api.user_timeline, id = uid, count = 200).items(self.tweets_limit)
 		res = []
-		for tweet in tweets:
-			res.append(self.extract_tweet_info(tweet))
+		try:
+			for tweet in tweets:
+				res.append(self.extract_tweet_info(tweet))
+		except tweepy.error.TweepError as e:
+			print e.message
+			return []
 		return res

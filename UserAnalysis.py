@@ -26,9 +26,9 @@ class ProfileAnalysis(object):
 
 	def get_statistics(self, user):
 		res = {
-			'follow_ratio': self._get_follow_ratio(user)
-			'statuses_count' self._get_statuses_count(user)
-			'join_time': self._get_join_time(user)
+			'follow_ratio': self._get_follow_ratio(user),
+			'statuses_count': self._get_statuses_count(user),
+			'join_time': self._get_join_time(user),
 		}
 		return res
 
@@ -61,7 +61,7 @@ class FriendsAnalysis(object):
 	def _extract_features(self, friends):
 		vectors = []
 		for friend in friends:
-			vec = [friend['followers_count'], friend['friends_count'], friend['favorites_count'], friend['statuses_count']]
+			vec = [friend['followers_count'], friend['friends_count'], friend['favourites_count'], friend['statuses_count']]
 			vectors.append(vec)
 		return vectors
 
@@ -71,11 +71,11 @@ class FriendsAnalysis(object):
 		labels = ms.labels_
 		cluster_centers = ms.cluster_centers_
 		labels_unique = numpy.unique(labels)
-		n_clusters_ = len(labels_unique)
+		n_clusters = len(labels_unique)
 		return {
 			'labels': labels,
-			'cluster_centers_': cluster_centers_,
-			'n_clusters_': n_clusters_,
+			'cluster_centers': cluster_centers,
+			'n_clusters': n_clusters,
 		}
 
 	def clustering(self, friends):
@@ -84,7 +84,7 @@ class FriendsAnalysis(object):
 		return res
 
 	def analyze(self, friends):
-		group_count = self.clustering(friends)['n_clusters_']
+		group_count = self.clustering(friends)['n_clusters']
 		score = 1 if group_count < self.group_limit else self.group_limit / group_count
 		print 'Number of groups among the friends:', group_count
 		return score
