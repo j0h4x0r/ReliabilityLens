@@ -111,6 +111,7 @@ class WordAnalysis(object):
 		self.stopwords = []
 		for word in stopwords.words('english'):
 			self.stopwords.append(word.encode('utf8', 'ignore'))
+		self.stopwords.append('rt')
 		# limit of average appearance of a word in a sentence
 		self.max_avg_limit = 1.0
 		self.punctuation_limit = 5.0

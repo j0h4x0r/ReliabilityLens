@@ -1,5 +1,6 @@
 from flask import Flask, url_for, render_template, request, jsonify
 import Analyzer
+import json
 
 app = Flask(__name__)
 
@@ -9,9 +10,11 @@ def index():
 
 @app.route('/analyze/')
 def analyze():
-	username = request.args.get('key', '')
+	username = request.args.get('username', '')
 	if username != '':
-		res = Analyzer.analyze(username)
+		#res = Analyzer.analyze(username)
+		# for test
+		res = json.load(open('result.txt'))
 		res['success'] = True
 	else:
 		res = {'success': False}

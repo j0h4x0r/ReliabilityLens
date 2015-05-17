@@ -12,7 +12,8 @@ def analyze(username):
 	tweets = api.get_statuses(username)
 	print 'All data collected!'
 
-	res = {'analysis': {}, 'data': {}}
+	res = {'analysis': {}, 'data': {}, 'user': user}
+	total = []
 
 	# user analysis
 	print '\nPerforming user analysis...'
@@ -20,9 +21,11 @@ def analyze(username):
 	print 'Analyzing profile...'
 	profileAnalyzer = UserAnalysis.ProfileAnalysis()
 	res['analysis']['user']['profile'] = profileAnalyzer.analyze(user)
+	total.append(res['analysis']['user']['profile'])
 	print 'Analyzing friends...'
 	friendsAnalyzer = UserAnalysis.FriendsAnalysis()
 	res['analysis']['user']['friends'] = friendsAnalyzer.analyze(friends)
+	total.append(res['analysis']['user']['friends'])
 
 	# status analysis
 	print '\nPerforming status analysis...'
@@ -30,12 +33,15 @@ def analyze(username):
 	print 'Analyzing frequency...'
 	timeSeriesAnalyer = StatusAnalysis.TimeSeriesAnalysis()
 	res['analysis']['status']['frequency'] = timeSeriesAnalyer.analyze(tweets)
+	total.append(res['analysis']['status']['frequency'])
 	print 'Analyzing sentiment...'
 	sentimentAnalyzer = StatusAnalysis.SentimentAnalysis()
 	res['analysis']['status']['sentiment'] = sentimentAnalyzer.analyze(tweets)
+	total.append(res['analysis']['status']['sentiment'])
 	print 'Analyzing words...'
 	wordAnalyzer = StatusAnalysis.WordAnalysis()
 	res['analysis']['status']['word'] = wordAnalyzer.analyze(tweets)
+	total.append(res['analysis']['status']['word'])
 
 	print 'Analysis done!'
 
@@ -47,8 +53,11 @@ def analyze(username):
 		res['data']['friends'].append(info)
 	# top 10 words, only work after word analysis
 	words_count = wordAnalyzer.stats['words_count']
-	res['data']['words'] = heapq.nlargest(10, words_count, key = lambda k: words_count[k])
+	res['data']['words'] = map(lambda k: (k, words_count[k]), heapq.nlargest(10, words_count, key = lambda k: words_count[k]))
 	print 'Data prepared!'
+
+	# total score
+	res['analysis']['total'] = sum(total) / len(total)
 	return res
 
 if __name__ == '__main__':
