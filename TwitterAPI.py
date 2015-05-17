@@ -49,7 +49,7 @@ class TwitterAPI(object):
 		}
 		return res
 
-	def get_user(self, user_id = None, screen_name = ""):
+	def get_user(self, screen_name = "", user_id = None):
 		uid = user_id if user_id else screen_name
 		try:
 			user = self.api.get_user(id = uid)
@@ -57,7 +57,7 @@ class TwitterAPI(object):
 			return {}
 		return self.extract_user_info(user)
 
-	def get_friends(self, user_id = None, screen_name = ""):
+	def get_friends(self, screen_name = "", user_id = None):
 		uid = user_id if user_id else screen_name
 		try:
 			friends = tweepy.Cursor(self.api.friends, id = uid, count = 200).items(self.friends_limit)
@@ -68,7 +68,7 @@ class TwitterAPI(object):
 			res.append(self.extract_user_info(friend))
 		return res
 
-	def get_statuses(self, user_id = None, screen_name = ""):
+	def get_statuses(self, screen_name = "", user_id = None):
 		uid = user_id if user_id else screen_name
 		try:
 			tweets = tweepy.Cursor(self.api.user_timeline, id = uid, count = 200).items(self.tweets_limit)

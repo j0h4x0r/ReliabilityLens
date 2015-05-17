@@ -81,7 +81,10 @@ class FriendsAnalysis(object):
 	def clustering(self, friends):
 		vectors = self._extract_features(friends)
 		res = self._mean_shift_clustering(vectors)
+		return res
 
 	def analyze(self, friends):
 		group_count = self.clustering(friends)['n_clusters_']
 		score = 1 if group_count < self.group_limit else self.group_limit / group_count
+		print 'Number of groups among the friends:', group_count
+		return score
