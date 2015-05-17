@@ -1,5 +1,5 @@
 import TwitterAPI, UserAnalysis, StatusAnalysis
-import json
+import json, heapq
 
 def analyze(username):
 	# collect data
@@ -45,6 +45,9 @@ def analyze(username):
 	for friend in friends:
 		info = {k: friend[k] for k in friend if k in ['screen_name', 'friends_count', 'profile_image_url']}
 		res['data']['friends'].append(info)
+	# top 10 words, only work after word analysis
+	words_count = wordAnalyzer.stats['words_count']
+	res['data']['words'] = heapq.nlargest(10, words_count, key = lambda k: words_count[k])
 	print 'Data prepared!'
 	return res
 

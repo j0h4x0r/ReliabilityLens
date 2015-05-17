@@ -17,6 +17,11 @@ class TimeSeriesAnalysis(object):
 		variance = sum(map(lambda x: (x - mean) ** 2, series))
 		distribution = lambda x: 1 / math.sqrt(2 * math.pi * variance) * (math.e ** ((-(x - mean) ** 2) / (2 * variance)))
 		likelihood = reduce(lambda x, y: x * y, map(distribution, series))
+		# another likelihood
+		likelihood = reduce(lambda x, y: x + y, map(distribution, series))
+		#likelihood /= len(series)
+		#likelihood = 1 if likelihood * 100 > 1 else likelihood * 100
+		likelihood = 1 if likelihood > 1 else likelihood
 		return likelihood
 
 	def _generate_count_series(self, tweets):
@@ -40,7 +45,7 @@ class SentimentAnalysis(object):
 	'''
 	This is a sentiment analysis. The input can be a single tweet or a list of tweets.
 	analyze_sentiment() returns a value between -5 and 5 indicating the sentiment of the tweets(s). 
-	analyze() returns a score value between 0 and 1 based on the sentiment.
+	analyze() returns a score value between 0 and 1 based on the sentiment indicating how neutral a user is.
 	If a list is given, the average score will be returned.
 	Here a lexicon-based method is used.
 	'''
@@ -87,6 +92,11 @@ class SentimentAnalysis(object):
 		sentiment = self.analyze_sentiment(tweets)
 		score = float(sentiment + 1) / 2
 		score = 0 if score < 0 else (1 if score > 1 else score)
+		# compute how neutral
+		score -= 0.5
+		score = -score if score < 0 else score
+		score *= 2
+		score = 1 - score
 		return score
 
 class WordAnalysis(object):
@@ -102,7 +112,7 @@ class WordAnalysis(object):
 		for word in stopwords.words('english'):
 			self.stopwords.append(word.encode('utf8', 'ignore'))
 		# limit of average appearance of a word in a sentence
-		self.max_avg_limit = 1.5
+		self.max_avg_limit = 1.0
 		self.punctuation_limit = 5.0
 		self.uppercase_limit = 1.0
 		self.length_limit = 5.0
@@ -157,6 +167,7 @@ class WordAnalysis(object):
 
 	def analyze(self, tweets):
 		stats = self.calculate_statistics(tweets)
+		self.stats = stats
 		score = 0.0
 		count = float(len(tweets))
 		# if the top word appears almost in every tweet, then this might be meaningless.

@@ -56,7 +56,7 @@ class FriendsAnalysis(object):
 	A number between 0 and 1 will be returned.
 	'''
 	def __init__(self):
-		self.group_limit = 5.0
+		self.group_limit = 10.0
 
 	def _extract_features(self, friends):
 		vectors = []
