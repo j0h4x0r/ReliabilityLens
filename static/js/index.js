@@ -22,6 +22,16 @@
 	}
 
 	function visualizeData(data) {
+		// information
+		$('#information').children().remove();
+		$('#information').append('<li class="list-group-item active">' + data.user['screen_name'] + '</li>');
+		for(k in data.user) {
+			if(k == 'screen_name' || k == 'id' || k == 'profile_image_url') {
+				continue;
+			} else {
+				$('#information').append('<li class="list-group-item">' + k + ': ' + data.user[k]+ '</li>');
+			}
+		}
 		// statistics
 		$('#rating').text(data.analysis.total.toFixed(1) * 10);
 		$('#statistics').children().remove();
@@ -46,15 +56,21 @@
 		drawWordCloud(wordData);
 		// friend graph
 		nodes = data.data.friends;
+		// only show 100 friends
+		if(nodes.length > 50)
+			nodes = _.sample(nodes, 50);
 		self = {
 			screen_name: data.user.screen_name,
 			friends_count: data.user.friends_count,
 			profile_image_url: data.user.profile_image_url,
 		};
+		var max = nodes[0].friends_count || 0;
 		links = nodes.map(function(d) {
+			max = d.friends_count > max ? d.friends_count : max;
 			return {source: self, target: d};
 		});
-		nodes.append(self);
+		nodes.push(self);
+		drawFriendNetwork(nodes, links, self, max);
 	}
 
 	function drawWordCloud(data) {
@@ -88,6 +104,67 @@
 				.text(function(d) { return d.text; });
 		}
 	};
+
+	function drawFriendNetwork(nodes, links, self, max_count) {
+		var width = 600,
+			height = 600
+
+		var svg = d3.select("#friend-network").append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		var force = d3.layout.force()
+			.gravity(0)
+			.distance(200)
+			.charge(-30)
+			.size([width, height])
+			.nodes(nodes)
+			.links(links)
+			.start();
+
+		var link = svg.selectAll(".link")
+			.data(links)
+			.enter().append("line")
+			.attr("class", "link");
+
+		var node = svg.selectAll(".node")
+			.data(nodes)
+			.enter().append("g")
+			.attr("class", "node")
+			.call(force.drag);
+
+		node.append("image")
+			.attr("xlink:href", function(d) { return d.profile_image_url; })
+			.attr("x", function(d) { return -24; })
+			.attr("y", function(d) { return -24; })
+			.attr("width", function(d) {
+				var w = 48 * d.friends_count / max_count;
+				if(d.screen_name == self.screen_name)
+					w = 48;
+				return w > 24 ? w : 24;
+			})
+			.attr("height", function(d) {
+				var h = 48 * d.friends_count / max_count;
+				if(d.screen_name == self.screen_name)
+					h = 48;
+				return h > 24 ? h : 24;
+			});
+
+		node.append("text")
+			.attr("dx", 12)
+			.attr("dy", ".5em")
+			.text(function(d) { return d.screen_name; });
+
+		force.on("tick", function() {
+			link.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; });
+			node.attr("transform", function(d) {
+				return "translate(" + d.x + "," + d.y + ")";
+			});
+		});
+	}
 
 	$(document).ready(function() {
 		$('#analyze-btn').click(analyzeHandler);

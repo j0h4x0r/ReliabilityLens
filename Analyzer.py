@@ -1,5 +1,5 @@
 import TwitterAPI, UserAnalysis, StatusAnalysis
-import json, heapq
+import json, heapq, copy
 
 def analyze(username):
 	# collect data
@@ -12,7 +12,9 @@ def analyze(username):
 	tweets = api.get_statuses(username)
 	print 'All data collected!'
 
-	res = {'analysis': {}, 'data': {}, 'user': user}
+	res = {'analysis': {}, 'data': {}, 'user': copy.deepcopy(user)}
+	# datetime is converted to ISO string to be serializable
+	res['user']['created_at'] = res['user']['created_at'].isoformat()
 	total = []
 
 	# user analysis

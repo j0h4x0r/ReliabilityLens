@@ -15,7 +15,7 @@ class ProfileAnalysis(object):
 		self.join_time_limit = 7.0
 
 	def _get_follow_ratio(self, user):
-		ratio = float(user['friends_count']) / user['followers_count']
+		ratio = float(user['friends_count']) / (user['followers_count'] + 1)
 		return ratio
 
 	def _get_statuses_count(self, user):
