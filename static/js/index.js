@@ -33,7 +33,7 @@
 			}
 		}
 		// statistics
-		$('#rating').text(data.analysis.total.toFixed(1) * 10);
+		$('#rating').text('Rating: ' + data.analysis.total.toFixed(1) * 10);
 		$('#statistics').children().remove();
 		for(k in data.analysis) {
 			if(k == 'total')
