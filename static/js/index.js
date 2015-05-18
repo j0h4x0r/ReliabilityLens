@@ -33,7 +33,7 @@
 			}
 		}
 		// statistics
-		$('#rating').text('Rating: ' + data.analysis.total.toFixed(1) * 10);
+		$('#rating').text('Rating: ' + data.analysis.total.toFixed(2) * 10);
 		$('#statistics').children().remove();
 		for(k in data.analysis) {
 			if(k == 'total')
@@ -107,7 +107,9 @@
 
 	function drawFriendNetwork(nodes, links, self, max_count) {
 		var width = 600,
-			height = 600
+			height = 600;
+
+		$('#friend-network').children().remove();
 
 		var svg = d3.select("#friend-network").append("svg")
 			.attr("width", width)

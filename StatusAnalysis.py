@@ -15,6 +15,8 @@ class TimeSeriesAnalysis(object):
 		# compute likelihood
 		mean = float(sum(series)) / len(series)
 		variance = sum(map(lambda x: (x - mean) ** 2, series))
+		if variance == 0:
+			return 1
 		distribution = lambda x: 1 / math.sqrt(2 * math.pi * variance) * (math.e ** ((-(x - mean) ** 2) / (2 * variance)))
 		likelihood = reduce(lambda x, y: x * y, map(distribution, series))
 		# another likelihood
