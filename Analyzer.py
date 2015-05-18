@@ -59,7 +59,8 @@ def analyze(username):
 	print 'Data prepared!'
 
 	# total score
-	res['analysis']['total'] = sum(total) / len(total)
+	#res['analysis']['total'] = sum(total) / len(total)
+	res['analysis']['total'] = min(total)
 	return res
 
 if __name__ == '__main__':
