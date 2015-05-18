@@ -61,12 +61,12 @@
 			nodes = _.sample(nodes, 50);
 		self = {
 			screen_name: data.user.screen_name,
-			friends_count: data.user.friends_count,
+			followers_count: data.user.followers_count,
 			profile_image_url: data.user.profile_image_url,
 		};
-		var max = nodes[0].friends_count || 0;
+		var max = nodes[0].followers_count || 0;
 		links = nodes.map(function(d) {
-			max = d.friends_count > max ? d.friends_count : max;
+			max = d.followers_count > max ? d.followers_count : max;
 			return {source: self, target: d};
 		});
 		nodes.push(self);
@@ -140,13 +140,13 @@
 			.attr("x", function(d) { return -24; })
 			.attr("y", function(d) { return -24; })
 			.attr("width", function(d) {
-				var w = 48 * d.friends_count / max_count;
+				var w = 48 * d.followers_count / max_count;
 				if(d.screen_name == self.screen_name)
 					w = 48;
 				return w > 24 ? w : 24;
 			})
 			.attr("height", function(d) {
-				var h = 48 * d.friends_count / max_count;
+				var h = 48 * d.followers_count / max_count;
 				if(d.screen_name == self.screen_name)
 					h = 48;
 				return h > 24 ? h : 24;

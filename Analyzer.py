@@ -54,7 +54,7 @@ def analyze(username):
 	print '\nPreparing data...'
 	res['data']['friends'] = []
 	for friend in friends:
-		info = {k: friend[k] for k in friend if k in ['screen_name', 'friends_count', 'profile_image_url']}
+		info = {k: friend[k] for k in friend if k in ['screen_name', 'followers_count', 'profile_image_url']}
 		res['data']['friends'].append(info)
 	# top 10 words, only work after word analysis
 	words_count = wordAnalyzer.stats['words_count']
