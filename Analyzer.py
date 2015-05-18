@@ -11,6 +11,9 @@ def analyze(username):
 	print 'Getting tweets...'
 	tweets = api.get_statuses(username)
 	print 'All data collected!'
+	if not (user and friends and tweets):
+		print 'Incomplete Data. No analysis performed.'
+		return None
 
 	res = {'analysis': {}, 'data': {}, 'user': copy.deepcopy(user)}
 	# datetime is converted to ISO string to be serializable
@@ -66,5 +69,7 @@ def analyze(username):
 if __name__ == '__main__':
 	username = raw_input('Input the username to be analyzed: ')
 	res = analyze(username)
+	if not res:
+		res = {}
 	with open('result.txt', 'w') as resfile:
 		resfile.write(json.dumps(res))

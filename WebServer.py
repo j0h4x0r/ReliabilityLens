@@ -15,7 +15,10 @@ def analyze():
 		res = Analyzer.analyze(username)
 		# for test
 		#res = json.load(open('result.txt'))
-		res['success'] = True
+		if res:
+			res['success'] = True
+		else:
+			res = {'success': False}
 	else:
 		res = {'success': False}
 	return jsonify(res)

@@ -55,7 +55,7 @@ class TwitterAPI(object):
 			user = self.api.get_user(id = uid)
 		except tweepy.error.TweepError as e:
 			print e.message
-			return {}
+			return None
 		return self.extract_user_info(user)
 
 	def get_friends(self, screen_name = "", user_id = None):
@@ -67,7 +67,7 @@ class TwitterAPI(object):
 				res.append(self.extract_user_info(friend))
 		except tweepy.error.TweepError as e:
 			print e.message
-			return []
+			return None
 		return res
 
 	def get_statuses(self, screen_name = "", user_id = None):
@@ -79,5 +79,5 @@ class TwitterAPI(object):
 				res.append(self.extract_tweet_info(tweet))
 		except tweepy.error.TweepError as e:
 			print e.message
-			return []
+			return None
 		return res
